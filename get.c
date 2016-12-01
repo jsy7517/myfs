@@ -160,14 +160,17 @@ void freesuperblock(int n, superblock *sb){ // 슈퍼블록에 저장된 정보 
 }
 
 bool find_free_inode(unsigned a){ // 가용 아이노드 검색
-	int i;
+	int i, tmp;
 	int n = sizeof(unsigned) * 8;
 	int mask = 1 << (n-1);
+	tmp = a << 31;
 
 	for(i = 1; i <= n; ++i){
-		if(a & mask == 0){
+		if(tmp & mask == 0){
 			return true;
 		}
+		else
+			tmp >>= 1;
 	}
 }
 
