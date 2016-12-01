@@ -88,7 +88,6 @@ void makeblock(void){
 
 void setinodeinfo(inode_list *p, superblock *sb){ // 아이노드 정보 입력
 	static int i;
-	static int j = 1;
 	while(1){
 		if(find_free_inode(sb -> freeinode[i])){
 			set_superblock(&(sb -> freeinode[i]));
@@ -96,7 +95,6 @@ void setinodeinfo(inode_list *p, superblock *sb){ // 아이노드 정보 입력
 			set_time(p);
 			set_size(p);
 			set_datablock_info();
-			j++;
 			break;
 		}
 		else{
