@@ -5,18 +5,20 @@
 
 void get_single(char *, int , int);
 int bit_print(char *, int);
+int num_bit(char *, int);
 
 int main(){
     char data[128]={0};
-    int n = 5, num = 1023;
+    int n = 5, num = 88;
     get_single(data, n, num);
-    for(int i = 0; i< 50; i++){
+    for(int i = (n-1)*10; i< (n-1)*10+10; i++){
         printf("%d ",bit_print(data, i)?1:0);
         
-        if(i%8==7&&i!=0)
-       // if(i%10==9&&i!=0)
+        //if(i%8==7&&i!=0)
+       if(i%10==9&&i!=0)
             printf("\n");
     }
+    printf("%d",num_bit(data,n));
     printf("\n");
 }
 
@@ -61,3 +63,13 @@ int bit_print(char * a, int n){
     int bit = c[n/8]&1<<(7-(n%8));
     return bit;
 }
+int num_bit(char * a, int n){
+    int num=0,count=0;
+    
+    for(int i=(n-1)*10;i<(n-1)*10+10;i++,count++)
+    if(bit_print(a,i))
+        num |= 1 << (9-count);
+
+    return num;
+}
+
