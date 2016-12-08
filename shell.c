@@ -55,6 +55,7 @@ int bit_print(char *, int n);
 int num_bit(char *, int n);
 void freeinode(inode *in, superblock * sb);
 void get_double(char *, int, int);
+void mycpfrom(char * name);
 
 inode in[512] = {0};
 datablock db[1024] = {0};
@@ -129,7 +130,7 @@ int main(void){
 				printf("mycd\n");
 			}
 
-			else if(!strncmp(tmp1,"mycp",4))
+			else if(!strncmp(tmp1,"mycp",4)&&tmp[4]=='\0')
 				printf("mycp\n");
 
 			else if(!strncmp(tmp1,"mycpto",6))
