@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <time.h>
 
+short bootblock;
+
 typedef struct superblock{
 	unsigned freeinode[16];
 	unsigned freedatablock[32];
