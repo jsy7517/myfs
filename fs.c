@@ -81,8 +81,8 @@ void set_superblock_d(unsigned *a);
 void init();
 void mypwd();
 void mycd(char * a, int num);
-void myls(int);                      //!!
-void myrmdir(char *a);              
+void myls(char*,int);                      //!!
+void myrmdir(char *a);
 void mytree(char *a);
 void mymv(char *, char *);           //!!
 void myfs_shell();                   //!!
@@ -134,7 +134,7 @@ void mycpfrom(char * tmp2, char * tmp3)
 }
 
 void mycpto(char * sourcefile, char * destfile)
-{	
+{
 	FILE *ofp;
 	ofp = fopen(destfile, "wb+");
 	int num, first_db_num, single_db_num, double_db_num, size;
@@ -789,8 +789,13 @@ void mycd(char * a, int num){
 				printf("비어있습니다.\n");
 				return;
 			}
-			if(!strncmp(now->left->name,a,4))
+			if(!strncmp(now->left->name,a,4)){
+				if(in[now->left->inum-1].file_type=='-'){
+					printf("Not directory\n");
+					return;
+				}
 				now = now->left;
+			}
 			else{
 				next = now->left;
 				while(i){
@@ -799,6 +804,10 @@ void mycd(char * a, int num){
 						return;
 					}
 					if(!strncmp(next->right->name,a,4)){
+						if(in[next->right->inum-1].file_type=='-'){
+							printf("Not directory\n");
+							return;
+						}
 						i--;
 						now = next -> right;
 					}
@@ -808,9 +817,11 @@ void mycd(char * a, int num){
 		}
 	}
 }
-void myls(int op){
+void myls(char *a,int op){
 	char name[100][5],tmp[5];
 	int num,i=0,inm[100]={0},itmp;
+	work = now;
+
 	if(now->left!=NULL){
 		strncpy(name[i],now->left->name, 4);
 		inm[i]=now->left->inum;
@@ -863,6 +874,7 @@ void myls(int op){
 		for(int a=0;a<num;a++)
 			printf("%d %c %4d %d/%d/%d %d:%d:%d %s\n",inm[a],in[(inm[a]-1)].file_type,in[(inm[a]-1)].file_size,in[(inm[a]-1)].file_creation_time[0],in[(inm[a]-1)].file_creation_time[1],in[(inm[a]-1)].file_creation_time[2],in[(inm[a]-1)].file_creation_time[3],in[(inm[a]-1)].file_creation_time[4],in[(inm[a]-1)].file_creation_time[5],name[a]);
 	}
+	now = work;
 }
 void myrmdir(char * a){
 	tree * pre;
@@ -1112,17 +1124,83 @@ void mytree(char * a){
 	}
 }
 void mymv(char * a, char * b){
-	tree * name;
-	if(!strncmp(a,now->left->name,4))
-		strncpy(now->left->name,b,4);
-	else{
+	tree * pre=NULL;
+	tree * con=NULL;
+	tree * sou=NULL;
+	tree * dir=NULL;
+	int check = 0;
+
+	if(now->left != NULL){
 		next = now->left;
+
+		if(!strncmp(a,next->name,4)&&in[(next->inum)-1].file_type=='-'){
+			pre = now;
+			if(next->right!=NULL)
+				con = next->right;
+			sou = next;
+		}
+
+		if(!strncmp(b,next->name,4)&&in[(next->inum)-1].file_type=='d')
+			dir = next;
+
 		while(next->right!=NULL){
-			if(!strncmp(next->right->name,a,4)){
-				strncpy(next->right->name,b,4);
-				break;
+			if(!strncmp(b,next->right->name,4)&&in[(next->right->inum)-1].file_type=='d')
+				dir = next->right;
+			if(!strncmp(a,next->right->name,4)&&in[(next->right->inum)-1].file_type=='-'){
+				check++;
+				pre = next;
+				if(next->right->right!=NULL)
+					con = next ->right->right;
+				sou = next->right;
 			}
-			next = next -> right;
+			next = next->right;
+		}
+	}
+
+	if(dir!=NULL&&sou!=NULL){
+		if(dir->left==NULL){
+			dir->left = sou;
+			if(!check){
+				if(con!=NULL)
+					pre->left = con;
+				else
+					pre->left=NULL;
+			}
+			else{
+				if(con!=NULL)
+					pre->right = con;
+				else
+					pre->right =NULL;
+			}
+		}
+		else{
+			next = dir->left;
+			while(next->right!=NULL)
+				next = next->right;
+			next -> right = sou;
+			if(!check){
+				if(con!=NULL)
+					pre->left = con;
+			}
+			else{
+				if(con!=NULL)
+					pre->right = con;
+			}
+		}
+	}
+
+	if(dir==NULL){
+		if(!strncmp(a,now->left->name,4)&&in[(now->left->inum)-1].file_type=='-')
+			strncpy(now->left->name,b,4);
+		else{
+			next = now->left;
+			while(next->right!=NULL){
+				if(!strncmp(next->right->name,a,4)&&in[(next->right->inum)-1].file_type=='-'){
+					strncpy(next->right->name,b,4);
+					break;
+				}
+				next = next -> right;
+			}
 		}
 	}
 }
@@ -1170,20 +1248,20 @@ void myfs_shell(){
 				check_fs = 1;
 			}
 			if(!strncmp(tmp1,"myls",4)){
-				if(tmp[4]=='\0')
-					myls(0);
 
-				else if((!strncmp(tmp2, "-li", 3))||(!strncmp(tmp2, "-il", 3))){
-					myls(3);
+				if((!strncmp(tmp2, "-li", 3))||(!strncmp(tmp2, "-il", 3))){
+					myls(tmp3,3);
 				}
 
 				else if(!strncmp(tmp2,"-i",2)){
-					myls(1);
+					myls(tmp3,1);
 				}
 
 				else if(!strncmp(tmp2,"-l",2)){
-					myls(2);
+					myls(tmp3,2);
 				}
+				else
+					myls(tmp2,0);
 			}
 
 			else if(!strncmp(tmp1,"mycat",5))
@@ -1303,4 +1381,3 @@ int find_free_i() // 가용 아이노드 검색
 		return val;
 	}
 }
-
