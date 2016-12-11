@@ -4,93 +4,95 @@
 #include <stdbool.h>
 #include <time.h>
 
-short bootblock;
+typedef struct bootblock{ // 부트블록
+	short bootblock;
+} bootblock;
 
-typedef struct superblock{
+typedef struct superblock{ // 슈퍼블록
 	unsigned freeinode[16];
 	unsigned freedatablock[32];
 } superblock;
 
-typedef struct inode{
+typedef struct inode{ // 아이노드
 	char file_type;
 	int file_creation_time[6];
 	int file_size;
 	int datablock_info[3];
 } inode;
 
-typedef struct datablock{
+typedef struct datablock{ // 데이터블록
 	char data[128];
 } datablock;
 
-typedef struct tree{
+typedef struct tree{ // 트리구조
 	char name[5];
 	int inum;
-	struct tree * up;      //부모 디렉터리
-	struct tree * left;    //첫번째 아래 디렉터리
-	struct tree * right;   //두번쨰 아래 디렉터리
+	struct tree * up;
+	struct tree * left;
+	struct tree * right;
 }tree;
 
-tree * root;    //루트
-tree * now;     //현재 디렉터리
-tree * next;    //작업 디렉터리
-tree * work;    //작업 디렉터리
+tree * root;
+tree * now;
+tree * next;
+tree * work;
 
-void copy1(char * data, char * destfile);
-void mycp(char *, char *);
-void mycpto(char * sourcefile, char * destfile);
-void freeinode(inode * in);
-void freedatablock(datablock * db);
-void myrm(char *);
-void makedouble(char * filename, int blocks, FILE * ifp, tree *);
-void makesingle(char * filename, int, FILE *, tree *);
-void makedirect(char * filename, FILE *, tree *);
-int find_free_superblock(unsigned a);
-void getdata_d(datablock *db, FILE * ifp, int tmp);
-int getblock_d(datablock * db, superblock * sb, FILE * ifp);
-void mytouch(char * tmp2);
-void mycpfrom(char * tmp2, char * tmp3);
-void mymkdir(char *tmp2);
-void show_inode_info(inode in);
-void myshowinode(char *tmp2);
-void mycd(char *, int);
-void myshowblock(char *tmp2);
-void getroot(void);
-void get_directory(char * tmp2);
-void myshowfile(char *tmp2, char *tmp3, char *tmp4);
-void mystate(void);
-void myshowfile(char *tmp2, char *tmp3, char *tmp4);
+int copy2(int, int, int); // 128 byte 초과하는 파일 복사 함수
+int copy1(int, int); // 128 byte 이하의 파일 복사 함수
+void mycp(char *, char *); // mycp
+void mycpto(char *, char *); // mycpto
+void freeinode(inode * in); // 아이노드 정보 제거
+void freedatablock(datablock *); // 데이터블록 정보 제거
+void myrm(char *); // myrm
+void makedouble(char *, int , FILE *, tree *); // double indirect 생성
+void makesingle(char *, int, FILE *, tree *); // single indirect 생성
+void makedirect(char *, FILE *, tree *); // direct 생성
+int find_free_superblock(unsigned); // 비트열 중 0 검색(가용 아이노드 및 데이터블록 검색)
+void mytouch(char *); // mytouch
+void mycpfrom(char *, char *); //mycpfrom
+void mymkdir(char *); // mymkdir
+void show_inode_info(inode in); // 아이노드 정보 출력
+void myshowinode(char *); // myshowinode
+void mycd(char *, int); // mycd
+void myshowblock(char *); // myshowblock
+void getroot(void); // 루트 디렉터리 할당
+void get_directory(char *); // 디렉터리 할당
+void myshowfile(char *, char *, char *); // myshowfile
+void mystate(void); // mystate
+void myshowfile(char *, char *, char *); // myshowfile
 void classify(char *,char *,char *,char *,char *);
-int getblock(datablock *, FILE *);
-void set_type(inode *);
-void set_time(inode *);
-void freebit(unsigned *a, int mod); // 비트 1에서 0으로 바꿔주는 함수
-int free_print(unsigned a);
-void freesuperblock_i(int n, superblock *sb);
-void freesuperblock_d(int n, superblock * sb);
-void set_size(inode *in, char * sourcefile);
-void set_datablock_info(int *, int);
-void get_single(char *, int, int);
-int bit_print(char *, int n);
-int num_bit(char *, int n);
+int getblock(datablock *, FILE *); // 데이터블록 할당
+void set_type(inode *); // 아이노드에 파일의 정보(디렉터리 / 일반 파일) 저장
+void set_time(inode *); // 아이노드에 파일 생성 시간 저장
+void freebit(unsigned *, int); // 비트 1에서 0으로 바꿔주는 함수(아이노드, 데이터블록 제거 시 사용)
+int free_print(unsigned); // mystate 비트 계산 함수
+void freesuperblock_i(int, superblock *); // 슈퍼블록 사용 정보 제거(아이노드)
+void freesuperblock_d(int, superblock *); // 슈퍼블록 사용 정보 제거(데이터블록)
+void set_size(inode *, char *); // 파일 사이즈 저장
+void set_datablock_info(int *, int); // 데이터블록 정보(direct, single, double) 저장
+void get_single(char *, int, int); 
+int bit_print(char *, int);
+int num_bit(char *, int);
 void get_double(char *, int, int);
-void getdata(datablock *db, FILE *);
-int set_inode_info_d(char *);
-int set_inode_info_f(char * tmp2);
-int find_free_i();
-int find_free_d();
-void set_superblock_i(unsigned *a);
-void set_superblock_d(unsigned *a);
-void init();                            //트리구조 시작
-void mypwd();
-void mycd(char * a, int num);
-void myls(char*,int);
-void myrmdir(char *a);
-void mytree(char *a);
-void mymv(char *, char *);
-void myfs_shell();
-void filesave();
-void fileload();
+void getdata(datablock *, FILE *);
+int set_inode_info_d(char *); // 아이노드 할당(디렉터리)
+int set_inode_info_f(char *); // 아이노드 할당(일반 파일)
+int find_free_i(); // 가용 아이노드 검색
+int find_free_d(); // 가용 데이터블록 검색
+void set_superblock_i(unsigned *); // 슈퍼블록에 아이노드 사용 정보 저장
+void set_superblock_d(unsigned *); // 슈퍼블록에 데이터블록 사용 정보 저장
+void init();
+void mypwd(); // mypwd
+void mycd(char *, int); // mycd
+void myls(char*, int);  // myls
+void myrmdir(char *); // myrmdir
+void mytree(char *); // mytree
+void mymv(char *, char *); // mymv
+void myfs_shell();                   //!!
+void filesave();                     //!!
+void fileload();                     //!!
 
+bootblock b[1] = {0};
 inode in[512] = {0};
 datablock db[1024] = {0};
 superblock sb[1] = {0};
@@ -187,6 +189,8 @@ void mycpto(char * sourcefile, char * destfile)
 void mycp(char * sourcefile, char * destfile)
 {
 	int num, size, blocks, first_db_num, double_db_num, single_db_num, tmp;
+	tree * newfile;
+	newfile = (tree *)malloc(sizeof(tree));
 	if(now->left==NULL)
 		return;
 	if(!strncmp(now->left->name,sourcefile,4))
@@ -209,16 +213,58 @@ void mycp(char * sourcefile, char * destfile)
 	double_db_num = in[num].datablock_info[2];
 
 	if(size <= 128)
-		copy1(db[tmp].data, destfile);
-
+		tmp = copy1(size, first_db_num);
+	else if(size > 128 && size <= 128 * 102)
+		tmp = copy2(size, first_db_num, single_db_num);
+	strncpy(newfile -> name, destfile, 4);
+	newfile->inum = tmp;
+	newfile->up = now;
+	newfile->left=NULL;
+	newfile->right=NULL;
+	if(now->left==NULL)
+		now->left = newfile;
+	else{
+		next = now->left;
+		while(next->right!=NULL)
+			next= next->right;
+		next->right = newfile;
+	}
+		
 }
 
-void copy1(char * data, char * destfile){
-	int a;
-	a = set_inode_info_f(destfile);
+int copy1(int size, int num){
+	int a, b, len;
+	a = find_free_i();
+	b = find_free_d();
+	in[a].datablock_info[0] = b + 1;
+	in[a].file_type = '-';
+	set_time(&in[a]);
+	in[a].file_size = size;
+	len = strlen(db[num-1].data);
+	strncpy(db[b].data, db[num-1].data, len);
+	return a;
 }
 
+int copy2(int size, int num, int num2){
+	int a, b, len, c;
+	a = find_free_i();
+	b = find_free_d();
+	in[a].datablock_info[0] = b + 1;
+	in[a].file_type = '-';
+	set_time(&in[a]);
+	in[a].file_size = size;
+	
+	len = strlen(db[num-1].data);
+	strncpy(db[b].data, db[num-1].data, len);
 
+	for(int i = num; i < num2; i++){
+		c = find_free_d();
+		len = strlen(db[num-1+i].data);
+		strncpy(db[b].data, db[num-1+i].data, len);
+	}
+	in[a].datablock_info[1] = num2 + b - 1;
+	return a;
+}
 
 void makedirect(char * filename, FILE * ifp, tree * file) //direct 생성
 {
@@ -351,31 +397,40 @@ void getroot(void){ // 루트 디렉터리 생성
 	set_inode_info_d("/");
 }
 
-void myshowfile(char *tmp2, char *tmp3, char *tmp4)
+void myshowfile(char *tmp2, char *tmp3, char *filename) // myshowfile
 {
-	int argv_1, argv_2, c;
-	FILE * ifp;
+	int argv_1, argv_2, c, inode_num = 0, db_num = 0;
 
 	argv_1 = atoi(tmp2);
 	argv_2 = atoi(tmp3);
-
-	ifp = fopen(tmp4, "r");
-	fseek(ifp, argv_1 - 1, SEEK_SET);
-
-	for(int i = 0; i < argv_2; i++){
-		c = getc(ifp);
-		putchar(c);
+	if(now->left==NULL)
+		return;
+	if(!strncmp(now->left->name,filename,4))
+		inode_num = now->left->inum-1;
+	else{
+		next = now->left;
+		while(next->right!=NULL){
+			if(!strncmp(next->right->name,filename,4)){
+				inode_num = next->right->inum-1;
+				break;
+			}
+			next= next->right;
+		}
 	}
+	db_num = in[inode_num].datablock_info[0];
+
+	for(int i = argv_1; i <= argv_2; i++)
+		printf("%c", db[db_num-1].data[i - 1]);
 	putchar('\n');
 }
 
 
-void set_datablock_info(int *n, int tmp)
+void set_datablock_info(int *n, int tmp) // 데이터블록 정보(direct, single, double) 저장
 {
 	*n = tmp + 1;
 }
 
-void myshowblock(char *tmp2)
+void myshowblock(char *tmp2) // myshowblock
 {
 	int index = 0;
 	index = atoi(tmp2);
@@ -384,14 +439,14 @@ void myshowblock(char *tmp2)
 	putchar('\n');
 }
 
-void myshowinode(char *tmp2)
+void myshowinode(char *tmp2) // myshowinode
 {
 	int index = 0;
 	index = atoi(tmp2);
 	show_inode_info(in[index - 1]);
 }
 
-void show_inode_info(inode in)
+void show_inode_info(inode in) // 아이노드 정보 보여주는 함수
 {
 	if(in.file_type == 'd')
 		printf("file type : directory file\n");
@@ -402,7 +457,7 @@ void show_inode_info(inode in)
 	printf("data block list : %d, %d, %d\n", in.datablock_info[0], in.datablock_info[1], in.datablock_info[2]);
 }
 
-void mymkdir(char *tmp2)
+void mymkdir(char *tmp2) // mymkdir
 {
 	int num;
 	tree * dir = NULL;
@@ -428,7 +483,7 @@ void mymkdir(char *tmp2)
 	}
 }
 
-void get_directory(char * tmp2)
+void get_directory(char * tmp2) // 디렉터리 할당
 {
 	set_inode_info_d(tmp2);
 }
@@ -544,7 +599,7 @@ void set_size(inode *in, char * sourcefile) // inode의 파일 사이즈 정보 
 }
 
 
-int getblock(datablock * db, FILE * ifp) // datablock 얻기
+int getblock(datablock * db, FILE * ifp) // datablock 할당
 {
 	int a, b;
 	b = find_free_d();
@@ -562,7 +617,7 @@ void getdata(datablock *db, FILE * ifp) // datablock에 데이터 저장
 	}
 }
 
-void freeinode(inode * in)
+void freeinode(inode * in) // 아이노드 정보 제거
 {
 	in -> file_size = 0;
 	for(int i = 0; i < 6; i++){
@@ -574,7 +629,7 @@ void freeinode(inode * in)
 	in -> file_type = '\0';
 }
 
-void freedatablock(datablock * db)
+void freedatablock(datablock * db) // 데이터블록 정보 제거
 {
 	int len;
 	len = strlen(db -> data);
@@ -656,7 +711,7 @@ void freebit(unsigned *a, int mod){ // 비트 1에서 0으로 바꾸는 함수(�
 	*a ^= tmp;
 }
 
-int free_print(unsigned a){
+int free_print(unsigned a){ // mystate 정보 계산용 함수
 	int i, free = 0;
 	bool check = false;
 	int n = sizeof(unsigned) * 8;
@@ -743,6 +798,54 @@ void get_double(char * a, int n, int num){
 	}
 }
 
+void mycat(char * filename) // mycat
+{
+	int inode_num, tmp, tmp2, tmp3, len;
+	if(now->left==NULL)
+		return;
+	if(!strncmp(now->left->name,filename,4))
+		inode_num = now->left->inum-1;
+	else{
+		next = now->left;
+		while(next->right!=NULL){
+			if(!strncmp(next->right->name,filename,4)){
+				inode_num = next->right->inum-1;
+				break;
+			}
+			next= next->right;
+		}
+	}
+
+	tmp = in[inode_num].datablock_info[0];
+	tmp2 = in[inode_num].datablock_info[1];
+	tmp3 = in[inode_num].datablock_info[2];
+
+	if(tmp2 == 0 && tmp3 == 0){
+		len = strlen(db[tmp-1].data);
+		for(int i = 0; i < len; i++){
+			printf("%c", db[tmp-1].data[i]);
+		}
+	}
+	else if(tmp2 != 0 && tmp3 == 0){
+		for(int j = tmp; j < tmp2-1; j++){
+			len = strlen(db[tmp-1+j].data);
+			for(int i = 0; i < len; i++){
+				printf("%c", db[tmp-1+j].data[i]);
+			}
+		}
+	}
+	
+	else{
+		for(int j = tmp; j < tmp3 - 1; j++){
+			if(j == tmp2)
+				++j;
+			len = strlen(db[tmp-1+j].data);
+			for(int i = 0; i < len; i++){
+				printf("%c", db[tmp-1+j].data[i]);
+			}
+		}
+	}
+}
 int bit_print(char * a, int n){
 	char * c = (char *) a;
 	int bit = c[n/8]&1<<(7-(n%8));
@@ -768,13 +871,16 @@ void init(){
 	now = root;
 	root -> up = root;
 }   // tree 시작
-void mypwd(){
-	printf("%s\n",now->name);
+void mypwd(){ // mypwd
+	if(now==root){
+		putchar('/');
+	}
+	else{
+		printf("/%s\n",now->name);
+	}
 }
-void mycd(char * a, int num){
-	int i=1,m=1,n=0;
-	char tmp[5]={0};
-	tree * temp;
+void mycd(char * a, int num){ // mycd
+	int i=1;
 
 	if(!num){
 		now = root;
@@ -782,42 +888,12 @@ void mycd(char * a, int num){
 	}
 
 	else if(num){
-		if(!strcmp(a,"."))
+		if(!strncmp(a,".",1))
 			return;
-		else if(!strcmp(a,".."))
+
+		else if(!strncmp(a,"..",2))
 			now = now->up;
-		else if(a[0]=='/'){
-			temp = root;
-			while(a[m]!='\0'){
-				if(a[m]=='/'){
-					if(temp->left!=NULL){
-						if(!strncmp(tmp,temp->left->name,4))
-							temp = temp-> left;
-						else{
-							next = temp->left;
-							while(next->right!=NULL){
-								if(!strncmp(tmp,next->right->name,4)){
-									temp = next->right;
-									break;
-								}
-								/*if(next->right->right==NULL)
-								  return;*/
-								next = next->right;
-							}
-						}
-						n=0;
-						for(int i=0;i<5;i++)
-							tmp[i]='\0';
-						m++;
-					}
-				}
-				else{
-					tmp[n]=a[m];
-					m++;
-				}
-			}
-            now = temp;
-		}
+
 		else{
 			if(now->left==NULL){
 				printf("비어있습니다.\n");
@@ -851,7 +927,7 @@ void mycd(char * a, int num){
 		}
 	}
 }
-void myls(char *a,int op){
+void myls(char *a,int op){ // myls
 	char name[100][5],tmp[5];
 	int num,i=0,inm[100]={0},itmp;
 	work = now;
@@ -910,7 +986,7 @@ void myls(char *a,int op){
 	}
 	now = work;
 }
-void myrmdir(char * a){
+void myrmdir(char * a){ // myrmdir
 	tree * pre;
 	tree * con;
 	int inode_num = 0, datablock_num = 0, tmp = 0, tmp2 = 0;
@@ -964,7 +1040,7 @@ void myrmdir(char * a){
 	freedatablock(&(db[datablock_num - 1]));
 	freeinode(&(in[inode_num]));
 }
-void myrm(char * a){
+void myrm(char * a){ // myrm
 	tree * pre;
 	tree * con;
 	int inode_num = 0, datablock_num = 0, single_db_num = 0, double_db_num = 0, last_db_num = 0;
@@ -1030,7 +1106,7 @@ void myrm(char * a){
 }
 
 
-void mytree(char * a){
+void mytree(char * a){ // mytree
 	int level[512]={0},j=1,count=0,ncheck[512]={0},go;
 	tree *check[512];
 	tree * next = NULL;
@@ -1157,7 +1233,7 @@ void mytree(char * a){
 		}
 	}
 }
-void mymv(char * a, char * b){
+void mymv(char * a, char * b){ // mymv
 	tree * pre=NULL;
 	tree * con=NULL;
 	tree * sou=NULL;
@@ -1239,9 +1315,10 @@ void mymv(char * a, char * b){
 	}
 }
 void myfs_shell(){
+	char *dir;
 	char *tmp, *tmp1, *tmp2, *tmp3, *tmp4;
-	int len, my=0,check=0, len2 = 0;
-	bool check_fs = false;
+	int len, my=0,check=0, len2 = 0, len3;
+	bool check_fs = false, check2 = true;
 	FILE * point;
 
 	while(1){
@@ -1250,7 +1327,23 @@ void myfs_shell(){
 		tmp2 = (char *)calloc(25, sizeof(char));
 		tmp3 = (char *)calloc(25, sizeof(char));
 		tmp4 = (char *)calloc(25, sizeof(char));
-		printf("[%s ]$ : ",now->name);
+		dir = (char *)calloc(10, sizeof(char));
+		if(now==root){
+			strncpy(dir,"/",1);
+		}
+		else{
+			dir[0] = '/';
+			len3 = strlen(now -> name);
+			for(int i = 1; i < len3+1; i++){
+				dir[i] = (now -> name[i-1]);
+			}
+			dir[len3+1] = '/';
+		}
+		printf("[%s ]$ : ",dir);
+		if(check2){
+		printf("파일 시스템 생성 : ");
+		check2 = false;
+		}
 		scanf("%[^\n]",tmp);
 		getchar();
 		classify(tmp,tmp1,tmp2,tmp3,tmp4);
@@ -1263,6 +1356,7 @@ void myfs_shell(){
 			free(tmp2);
 			free(tmp3);
 			free(tmp4);
+			free(dir);
 			exit(1);
 		}
 		if(!my)
@@ -1299,7 +1393,7 @@ void myfs_shell(){
 			}
 
 			else if(!strncmp(tmp1,"mycat",5))
-				printf("mycat\n");
+				mycat(tmp2);
 
 			else if(!strncmp(tmp1,"myshowfile",10)){
 				myshowfile(tmp2, tmp3, tmp4);
@@ -1316,7 +1410,7 @@ void myfs_shell(){
 				check=0;
 			}
 
-			else if(!strncmp(tmp1,"mycp",4) && tmp[4] == '\0')
+			else if(!strncmp(tmp1,"mycp",4) && tmp[4] == ' ')
 				mycp(tmp2, tmp3);
 
 			else if(!strncmp(tmp1,"mycpto",6))
