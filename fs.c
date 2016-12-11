@@ -1,9 +1,9 @@
-/***********************************
-**             미완성부분            **
-**          절대경로 상대경로          **
+/******************************************
+**             미완성부분                **
+**          절대경로 상대경로            **
 **      프로그램 종료 후 데이터 복원     **
 **     정수영, 차윤성, 김누리, 이인후    **
-************************************/
+******************************************/
 
 
 #include <stdio.h>
@@ -1114,7 +1114,7 @@ void myrm(char * a){ // myrm
 
 
 void mytree(char * a){ // mytree
-    int level[512]={0},j=1,count=0,ncheck[512]={0},go;
+    int level[512]={0},j=1,count=0,ncheck[512]={0},go,check2=0;
     tree *check[512];
     tree * next = NULL;
     tree * save = NULL;
@@ -1192,8 +1192,12 @@ void mytree(char * a){ // mytree
                 turn = next;
             }
             while(ncheck[0]){
-                for(int a = 511;a>-1;a--){
+				if(check2)
+					break;
+                for(int a = 511;a>=0;--a){
                     if(ncheck[a]){
+						if(a==0)
+							check2++;
                         j = ncheck[a];
                         turn = check[a];
                         count--;
