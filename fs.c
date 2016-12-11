@@ -23,15 +23,15 @@ typedef struct datablock{
 typedef struct tree{
 	char name[5];
 	int inum;
-	struct tree * up;
-	struct tree * left;
-	struct tree * right;
+	struct tree * up;      //부모 디렉터리
+	struct tree * left;    //첫번째 아래 디렉터리
+	struct tree * right;   //두번쨰 아래 디렉터리
 }tree;
 
-tree * root;
-tree * now;
-tree * next;
-tree * work;
+tree * root;    //루트
+tree * now;     //현재 디렉터리
+tree * next;    //작업 디렉터리
+tree * work;    //작업 디렉터리
 
 void copy1(char * data, char * destfile);
 void mycp(char *, char *);
@@ -78,16 +78,16 @@ int find_free_i();
 int find_free_d();
 void set_superblock_i(unsigned *a);
 void set_superblock_d(unsigned *a);
-void init();
+void init();                            //트리구조 시작
 void mypwd();
 void mycd(char * a, int num);
-void myls(char*,int);                      //!!
+void myls(char*,int);
 void myrmdir(char *a);
 void mytree(char *a);
-void mymv(char *, char *);           //!!
-void myfs_shell();                   //!!
-void filesave();                     //!!
-void fileload();                     //!!
+void mymv(char *, char *);
+void myfs_shell();
+void filesave();
+void fileload();
 
 inode in[512] = {0};
 datablock db[1024] = {0};
@@ -770,7 +770,9 @@ void mypwd(){
 	printf("%s\n",now->name);
 }
 void mycd(char * a, int num){
-	int i=1;
+	int i=1,m=1,n=0;
+	char tmp[5]={0};
+	tree * temp;
 
 	if(!num){
 		now = root;
@@ -780,10 +782,40 @@ void mycd(char * a, int num){
 	else if(num){
 		if(!strcmp(a,"."))
 			return;
-
 		else if(!strcmp(a,".."))
 			now = now->up;
-
+		else if(a[0]=='/'){
+			temp = root;
+			while(a[m]!='\0'){
+				if(a[m]=='/'){
+					if(temp->left!=NULL){
+						if(!strncmp(tmp,temp->left->name,4))
+							temp = temp-> left;
+						else{
+							next = temp->left;
+							while(next->right!=NULL){
+								if(!strncmp(tmp,next->right->name,4)){
+									temp = next->right;
+									break;
+								}
+								/*if(next->right->right==NULL)
+								  return;*/
+								next = next->right;
+							}
+						}
+						n=0;
+						for(int i=0;i<5;i++)
+							tmp[i]='\0';
+						m++;
+					}
+				}
+				else{
+					tmp[n]=a[m];
+					m++;
+				}
+			}
+            now = temp;
+		}
 		else{
 			if(now->left==NULL){
 				printf("비어있습니다.\n");
